@@ -195,6 +195,14 @@ async function main() {
       check('Mac keyboard permission status and explicit retry');
     }
     await toggle('headTracking',true); await toggle('headTracking',false);
+    for (const [key,value] of [['neglectMinutes',3],['deviceIdleMinutes',7]]) {
+      const input = page.locator(`[name="${key}"]`); await input.fill(String(value)); await input.press('Tab'); await settled();
+      assert.equal(settings[key],value);
+    }
+    await toggle('idleMoods',false); assert.equal(await page.locator('[name="neglectMinutes"]').isDisabled(),true);
+    await toggle('idleMoods',true);
+    check('head tracking and passive mood settings remain independent');
+
     await toggle('eyeTracking', false); await number('eyeWarpStrength', 0, 0); await number('eyeWarpStrength', 200, 2); await number('eyeWarpStrength', 137, 1.37);
     await toggle('eyeTracking', true);
     await number('motionAmplitude', 0, 0); await number('motionAmplitude', 200, 2); await number('motionAmplitude', 85, .85);
