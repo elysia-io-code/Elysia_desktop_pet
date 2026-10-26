@@ -194,6 +194,7 @@ async function main() {
       assert.match(await page.locator('#typing-status').textContent(),/已启用/);
       check('Mac keyboard permission status and explicit retry');
     }
+    await toggle('headTracking',true); await toggle('headTracking',false);
     await toggle('eyeTracking', false); await number('eyeWarpStrength', 0, 0); await number('eyeWarpStrength', 200, 2); await number('eyeWarpStrength', 137, 1.37);
     await toggle('eyeTracking', true);
     await number('motionAmplitude', 0, 0); await number('motionAmplitude', 200, 2); await number('motionAmplitude', 85, .85);
