@@ -75,6 +75,7 @@ function makeToggle(target, key, title, description, actionType = null) {
 for (const skin of SKINS) makeToggle(document.querySelector('#skins'), skin.id, skin.label, `空格 + ${skin.key}`, 'toggle-skin');
 const toggles = [
   ['#eye-toggle', 'eyeTracking', '目光跟随鼠标', '保持原来的眼神效果，可以单独调整幅度。'],
+  ['#idle-toggle', 'idleMoods', '待机情绪', '分别根据你与桌宠的互动和电脑空闲时间切换表情。'],
   ['#head-toggle', 'headTracking', '头部跟随鼠标', '头部随鼠标轻轻转动和抬低，与目光跟随分别控制。'],
   ['#motion-toggle', 'hairMotion', '头发、衣摆与腿部摆动', '上半身与下半身保持同向轻摆。'],
   ['#key-toggle', 'keyDisplay', '按键云朵', '只显示最近输入的一个字符，约一秒后消失。'],
@@ -121,11 +122,27 @@ document.querySelector('[name=cursorTrailDurationValue]').addEventListener('keyd
   if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); }
 });
 
+for (const key of ['neglectMinutes', 'deviceIdleMinutes']) {
+  const input = document.querySelector(`[name="${key}"]`);
+  input.addEventListener('change', () => {
+    if (!Number.isFinite(input.valueAsNumber)) {
+      input.value = String(snapshot?.settings?.[key] ?? (key === 'neglectMinutes' ? 2 : 5)); return;
+    }
+    const value = Math.max(1, Math.min(120, input.valueAsNumber));
+    input.value = String(value); void patch(key, value);
+  });
+}
+
 document.querySelector('#typing-permission').addEventListener('click', () => void command(() => desktop.requestTypingPermission()));
 
 function render() {
   if (!snapshot) return;
   const { settings, appearance = {} } = snapshot;
+  for (const key of ['neglectMinutes', 'deviceIdleMinutes']) {
+    const input = document.querySelector(`[name="${key}"]`);
+    if (document.activeElement !== input) input.value = String(settings[key] ?? (key === 'neglectMinutes' ? 2 : 5));
+    input.disabled = settings.idleMoods === false;
+  }
   const typing = snapshot.hotkeys?.typing;
   document.querySelector('#typing-status').textContent = !settings.keyDisplay ? '按键云朵已关闭。'
     : typing?.active ? '全局按键显示已启用。' : typing?.error || '正在连接按键监听…';
